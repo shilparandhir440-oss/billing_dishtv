@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing Details Calculator</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    padding:20px;
+}
+
+.container{
+    width:850px;
+    max-width:100%;
+    background:rgba(255,255,255,0.97);
+    border-radius:18px;
+    padding:30px;
+    box-shadow:0 15px 40px rgba(0,0,0,.35);
+}
+
+h2{
+    text-align:center;
+    margin-bottom:25px;
+    color:#1d3557;
+}
+
+.input-area{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-end;
+    margin-bottom:20px;
+}
+
+.input-group{
+    display:flex;
+    flex-direction:column;
+    font-weight:bold;
+    color:#333;
+}
+
+input[type=date]{
+    margin-top:5px;
+    padding:10px;
+    border:1px solid #bbb;
+    border-radius:8px;
+    font-size:15px;
+}
+
+.btn-generate {
+    padding: 11px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #0077ff, #00b4db);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 119, 255, 0.25);
+    transition: all 0.2s ease;
+}
+
+.btn-generate:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+#error-message {
+    text-align: center;
+    color: #e63946;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    display: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    tabindex: -1;
+}
+
+/* --- Fixed Multi-Column Chronological Layout --- */
+#billingTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#billingTable tbody {
+    display: block;
+    column-count: 2;
+    column-gap: 15px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    #billingTable tbody {
+        column-count: 1;
+    }
+}
+
+#billingTable tbody tr {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+    margin-bottom: 12px;
+    break-inside: avoid;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+}
+
+#billingTable tbody td {
+    padding: 10px 14px;
+    border: none;
+}
+
+#billingTable tbody td:first-child {
+    background: #f1f5f9;
+    font-weight: bold;
+    color: #1d3557;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#billingTable tbody td.days-data {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #475569;
+}
+
+#billingTable tbody td.days-data span.running-count {
+    font-weight: bold;
+    color: #0077ff;
+}
+
+#billingTable tbody td.days-data span.running-total {
+    font-size: 12px;
+    color: #475569;
+    background: #eef6ff;
+    border: 1px solid #d0e4ff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+#billingTable thead {
+    display: none;
+}
+
+#billingTable tfoot {
+    display: block;
+    margin-top: 15px;
+    width: 100%;
+}
+
+#billingTable tfoot tr {
+    display: flex;
+    justify-content: space-between;
+    background: #dff5df;
+    font-weight: bold;
+    border: 1px solid #c2ecc2;
+    border-radius: 8px;
+    margin-bottom: 6px;
+}
+
+#billingTable tfoot td {
+    padding: 12px;
+    border: none;
+}
+
+.summary{
+    margin-top:20px;
+    display:flex;
+    justify-content:space-between;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.card{
+    flex:1;
+    min-width:180px;
+    background:linear-gradient(135deg,#0077ff,#00b4db);
+    color:#fff;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    box-shadow:0 8px 18px rgba(0,0,0,.2);
+}
+
+.card h3{
+    font-size:16px;
+    margin-bottom:8px;
+}
+
+.card p{
+    font-size:24px;
+    font-weight:bold;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>📅 Billing Details Calculator</h2>
+
+<div class="input-area">
+
+<div class="input-group">
+<label>Start Date</label>
+<input type="date" id="startDate">
+</div>
+
+<div class="input-group">
+<label>End Date</label>
+<input type="date" id="endDate">
+</div>
+
+<button type="button" class="btn-generate" id="btnGenerate">Generate</button>
+
+</div>
+
+<div id="error-message">⚠ Error: Invalid date range entered!</div>
+
+<table id="billingTable">
+
+<thead>
+<tr>
+<th>Month</th>
+<th>Days Count</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+<tfoot>
+<tr>
+<td>Total Days</td>
+<td id="totalDays">0</td>
+</tr>
+
+<tr>
+<td>Month + Remaining Days</td>
+<td id="monthDayFormat">0 Months 0 Days</td>
+</tr>
+</tfoot>
+
+</table>
+
+<div class="summary">
+
+<div class="card">
+<h3>Total Days</h3>
+<p id="cardDays">0</p>
+</div>
+
+<div class="card">
+<h3>Billing Period</h3>
+<p id="cardFormat">0M 0D</p>
+</div>
+
+</div>
+
+</div>
+
+<script>
+// Live inputs will no longer trigger generation or display errors mid-typing
+document.getElementById("startDate").addEventListener("blur", function(e) {
+    fixTwoDigitYear(e);
+    generateBilling();
+});
+document.getElementById("endDate").addEventListener("blur", function(e) {
+    fixTwoDigitYear(e);
+    generateBilling();
+});
+
+document.getElementById("startDate").addEventListener("keydown", handleEnterKey);
+document.getElementById("endDate").addEventListener("keydown", handleEnterKey);
+
+document.getElementById("btnGenerate").addEventListener("click", function() {
+    fixTwoDigitYear({ target: document.getElementById("startDate") });
+    fixTwoDigitYear({ target: document.getElementById("endDate") });
+    generateBilling();
+});
+
+function handleEnterKey(e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        fixTwoDigitYear(e);
+        generateBilling();
+        
+        if (e.target.id === "startDate") {
+            document.getElementById("endDate").focus();
+        } else {
+            e.target.blur();
+        }
+    }
+}
+
+function fixTwoDigitYear(e) {
+    const input = e.target;
+    let val = input.value;
+    
+    if (val) {
+        const parts = val.split('-');
+        const rawYear = parts[0];
+        const yearInt = parseInt(rawYear, 10);
+        
+        if (rawYear && rawYear.length === 4 && yearInt < 1000) {
+            const currentYear = new Date().getFullYear();
+            const currentCentury = Math.floor(currentYear / 100) * 100;
+            
+            let candidateThisCentury = currentCentury + yearInt;
+            let candidatePrevCentury = candidateThisCentury - 100;
+            
+            let finalYear = (candidateThisCentury <= currentYear + 1) ? candidateThisCentury : candidatePrevCentury;
+            
+            parts[0] = String(finalYear);
+            input.value = parts.join('-');
+        }
+    }
+}
+
+function resetUIElements() {
+    const tbody = document.querySelector("#billingTable tbody");
+    const totalCell = document.getElementById("totalDays");
+    const totalMonthsCell = document.getElementById("totalMonths");
+    const monthDayCell = document.getElementById("monthDayFormat");
+
+    tbody.innerHTML = "";
+    totalCell.textContent = "0";
+    if(totalMonthsCell) totalMonthsCell.textContent = "0";
+    monthDayCell.textContent = "0 Months 0 Days";
+    document.getElementById("cardDays").textContent = "0";
+    if(document.getElementById("cardMonths")) document.getElementById("cardMonths").textContent = "0.00";
+    document.getElementById("cardFormat").textContent = "0M 0D";
+}
+
+function generateBilling(){
+    const startInput = document.getElementById("startDate").value;
+    const endInput = document.getElementById("endDate").value;
+    const tbody = document.querySelector("#billingTable tbody");
+
+    const totalCell = document.getElementById("totalDays");
+    const totalMonthsCell = document.getElementById("totalMonths");
+    const monthDayCell = document.getElementById("monthDayFormat");
+    const errorDiv = document.getElementById("error-message");
+
+    errorDiv.style.display = "none";
+
+    if(!startInput || !endInput){
+        resetUIElements();
+        return;
+    }
+
+    const start = new Date(startInput);
+    const end = new Date(endInput);
+
+    if(start > end || isNaN(start.getTime()) || isNaN(end.getTime())){
+        resetUIElements();
+        errorDiv.style.display = "block";
+        return;
+    }
+
+    tbody.innerHTML = "";
+    let totalDays = 0;
+
+    if(start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()){
+        let daysCount = (end.getDate() - start.getDate()) + 1;
+        totalDays = daysCount;
+
+        let row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${start.toLocaleString('default',{month:'long'})} ${start.getFullYear()}</td>
+            <td class="days-data">
+                <span>Days: <span class="running-count">${daysCount}</span></span>
+                <span class="running-total">Running Total: ${totalDays}</span>
+            </td>
+        `;
+        tbody.appendChild(row);
+    } else {
+        let current = new Date(start);
+        while(current <= end){
+            let year = current.getFullYear();
+            let month = current.getMonth();
+
+            let firstDay = new Date(year, month, 1);
+            let lastDay = new Date(year, month + 1, 0);
+
+            let startDay = current > firstDay ? current : firstDay;
+            let endDay = end < lastDay ? end : lastDay;
+
+            let daysCount = (endDay.getDate() - startDay.getDate()) + 1;
+            totalDays += daysCount;
+
+            let row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${startDay.toLocaleString('default',{month:'long'})} ${year}</td>
+                <td class="days-data">
+                    <span>Days: <span class="running-count">${daysCount}</span></span>
+                    <span class="running-total">Running Total: ${totalDays}</span>
+                </td>
+            `;
+            tbody.appendChild(row);
+
+            current = new Date(year, month + 1, 1);
+        }
+    }
+
+    const monthsDecimal = (totalDays / 30).toFixed(2);
+    const months = Math.floor(totalDays / 30);
+    const days = totalDays % 30;
+
+    totalCell.textContent = totalDays;
+    if(totalMonthsCell) totalMonthsCell.textContent = monthsDecimal;
+    monthDayCell.textContent = `${months} Month${months!=1?'s':''} ${days} Day${days!=1?'s':''}`;
+
+    document.getElementById("cardDays").textContent = totalDays;
+    if(document.getElementById("cardMonths")) document.getElementById("cardMonths").textContent = monthsDecimal;
+    document.getElementById("cardFormat").textContent = `${months}M ${days}D`;
+}
+</script>
+<div><h2>Document Preview</h2>
+    <iframe src="https://drive.google.com/file/d/1q21341XvHgFUWQXoz1ZKqXzsCue_2OqR/preview" allow="autoplay"></iframe>
+
+</div>
+
+</body>
+</html>
