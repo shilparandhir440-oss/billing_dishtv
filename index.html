@@ -392,7 +392,7 @@ function generateBilling(){
             <td>${start.toLocaleString('default',{month:'long'})} ${start.getFullYear()}</td>
             <td class="days-data">
                 <span>Days: <span class="running-count">${daysCount}</span></span>
-                <span class="running-total">Running Total: ${totalDays}</span>
+                <span class="running-total">Total days: ${totalDays}</span>
             </td>
         `;
         tbody.appendChild(row);
@@ -416,7 +416,7 @@ function generateBilling(){
                 <td>${startDay.toLocaleString('default',{month:'long'})} ${year}</td>
                 <td class="days-data">
                     <span>Days: <span class="running-count">${daysCount}</span></span>
-                    <span class="running-total">Running Total: ${totalDays}</span>
+                    <span class="running-total">Total days: ${totalDays}</span>
                 </td>
             `;
             tbody.appendChild(row);
