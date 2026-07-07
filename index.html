@@ -420,11 +420,9 @@ function generateBilling(){
                 </td>
             `;
             tbody.appendChild(row);
-
             current = new Date(year, month + 1, 1);
         }
     }
-
     const monthsDecimal = (totalDays / 30).toFixed(2);
     const months = Math.floor(totalDays / 30);
     const days = totalDays % 30;
