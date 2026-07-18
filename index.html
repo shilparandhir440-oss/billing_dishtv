@@ -108,7 +108,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     width: 100%;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     #billingTable tbody {
         column-count: 1;
     }
@@ -135,6 +135,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     font-weight: bold;
     color: #1d3557;
     border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#billingTable tbody td .date-range-sub {
+    font-size: 12px;
+    font-weight: normal;
+    color: #64748b;
 }
 
 #billingTable tbody td.days-data {
@@ -282,7 +291,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 </div>
 
 <script>
-// Live inputs will no longer trigger generation or display errors mid-typing
 document.getElementById("startDate").addEventListener("blur", function(e) {
     fixTwoDigitYear(e);
     generateBilling();
@@ -342,15 +350,12 @@ function fixTwoDigitYear(e) {
 function resetUIElements() {
     const tbody = document.querySelector("#billingTable tbody");
     const totalCell = document.getElementById("totalDays");
-    const totalMonthsCell = document.getElementById("totalMonths");
     const monthDayCell = document.getElementById("monthDayFormat");
 
     tbody.innerHTML = "";
     totalCell.textContent = "0";
-    if(totalMonthsCell) totalMonthsCell.textContent = "0";
     monthDayCell.textContent = "0 Months 0 Days";
     document.getElementById("cardDays").textContent = "0";
-    if(document.getElementById("cardMonths")) document.getElementById("cardMonths").textContent = "0.00";
     document.getElementById("cardFormat").textContent = "0M 0D";
 }
 
@@ -360,7 +365,6 @@ function generateBilling(){
     const tbody = document.querySelector("#billingTable tbody");
 
     const totalCell = document.getElementById("totalDays");
-    const totalMonthsCell = document.getElementById("totalMonths");
     const monthDayCell = document.getElementById("monthDayFormat");
     const errorDiv = document.getElementById("error-message");
 
@@ -383,56 +387,46 @@ function generateBilling(){
     tbody.innerHTML = "";
     let totalDays = 0;
 
-    if(start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()){
-        let daysCount = (end.getDate() - start.getDate()) + 1;
-        totalDays = daysCount;
+    let current = new Date(start);
+    while(current <= end){
+        let year = current.getFullYear();
+        let month = current.getMonth();
+
+        let firstDay = new Date(year, month, 1);
+        let lastDay = new Date(year, month + 1, 0);
+
+        let startDay = current > firstDay ? current : firstDay;
+        let endDay = end < lastDay ? end : lastDay;
+
+        let daysCount = (endDay.getDate() - startDay.getDate()) + 1;
+        totalDays += daysCount;
+
+        // Formats the specific start and end strings for the current segment block
+        const startDayStr = startDay.toLocaleString('default', { month: 'short', day: 'numeric' });
+        const endDayStr = endDay.toLocaleString('default', { month: 'short', day: 'numeric' });
 
         let row = document.createElement("tr");
         row.innerHTML = `
-            <td>${start.toLocaleString('default',{month:'long'})} ${start.getFullYear()}</td>
+            <td>
+                <span>${startDay.toLocaleString('default',{month:'long'})} ${year}</span>
+                <span class="date-range-sub">(${startDayStr} - ${endDayStr})</span>
+            </td>
             <td class="days-data">
                 <span>Days: <span class="running-count">${daysCount}</span></span>
                 <span class="running-total">Total days: ${totalDays}</span>
             </td>
         `;
         tbody.appendChild(row);
-    } else {
-        let current = new Date(start);
-        while(current <= end){
-            let year = current.getFullYear();
-            let month = current.getMonth();
-
-            let firstDay = new Date(year, month, 1);
-            let lastDay = new Date(year, month + 1, 0);
-
-            let startDay = current > firstDay ? current : firstDay;
-            let endDay = end < lastDay ? end : lastDay;
-
-            let daysCount = (endDay.getDate() - startDay.getDate()) + 1;
-            totalDays += daysCount;
-
-            let row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${startDay.toLocaleString('default',{month:'long'})} ${year}</td>
-                <td class="days-data">
-                    <span>Days: <span class="running-count">${daysCount}</span></span>
-                    <span class="running-total">Total days: ${totalDays}</span>
-                </td>
-            `;
-            tbody.appendChild(row);
-            current = new Date(year, month + 1, 1);
-        }
+        current = new Date(year, month + 1, 1);
     }
-    const monthsDecimal = (totalDays / 30).toFixed(2);
+
     const months = Math.floor(totalDays / 30);
     const days = totalDays % 30;
 
     totalCell.textContent = totalDays;
-    if(totalMonthsCell) totalMonthsCell.textContent = monthsDecimal;
     monthDayCell.textContent = `${months} Month${months!=1?'s':''} ${days} Day${days!=1?'s':''}`;
 
     document.getElementById("cardDays").textContent = totalDays;
-    if(document.getElementById("cardMonths")) document.getElementById("cardMonths").textContent = monthsDecimal;
     document.getElementById("cardFormat").textContent = `${months}M ${days}D`;
 }
 </script>
